@@ -2,8 +2,6 @@ package ftcDashboard
 
 import java.awt.Graphics
 import java.awt.GraphicsEnvironment
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import javax.swing.JPanel
 
@@ -19,25 +17,6 @@ class FTCDashboard(ppi: Double) : IFTCDashboard {
             for (i in fonts) {
                 println("$i ")
             }
-
-            addMouseListener(object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-
-                    if (e.button != MouseEvent.BUTTON1) {
-                        return super.mousePressed(e)
-                    }
-                    val packet = TelemetryPacket()
-                    packet.fieldOverlay()
-                        .setFill("#0000ff")
-                        .drawImage("resources/bg.png", 0.0, 0.0, 144.0, 144.0)
-                        .drawGrid(0.0, 0.0, 144.0, 144.0, 7, 7)
-                        .fillRect(-20.0, -20.0, 40.0, 40.0)
-                        .setFill("#ff0000")
-                        .fillText("Text", 0.0, 144.0, "${1 * ppi}px FreeSans", 0.0)
-
-                    sendTelemetryPacket(packet)
-                }
-            })
         }
 
         override fun paintComponent(g: Graphics) {

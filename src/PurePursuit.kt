@@ -1,4 +1,5 @@
-import java.awt.Color
+import ftcDashboard.ICanvas
+import ftcDashboard.TelemetryPacket
 import kotlin.math.abs
 
 class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateHertz) {
@@ -13,16 +14,25 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
     var lastIntersection: Intersection = Intersection(path[0], pathSegments[0]) // start of the path
     var lastSegment: Int = 0 // prevent backtracking
 
+    val prevPosition: MutableList<Point> = mutableListOf()
+
     override fun init() {
         println("Initializing Pure Pursuit")
     }
 
     override fun loop(): Boolean {
+        val packet = TelemetryPacket()
+        val canvas = packet.fieldOverlay()
+            .drawImage("resources/bg.png", 0.0, 0.0, 144.0, 144.0)
+            .setFill("#808080")
+            .drawGrid(0.0, 0.0, 144.0, 144.0, 7, 7)
+            .setFill("#D3D3D3")
         for (point in path) {
-            draw(point, DrawData(Color.GRAY, 10.0))
+            canvas.fillCircle(point.x, point.y, 1.0)
         }
+        canvas.setStrokeWidth(2)
         for (segment in pathSegments) {
-            draw(segment, DrawData(Color.GRAY, 2.0))
+            canvas.strokeLine(segment.p1.x, segment.p1.y, segment.p2.x, segment.p2.y)
         }
 
         val distanceToFinal = robot.position.distanceTo(path.last())
@@ -32,8 +42,11 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
                 return false
             }
             lastIntersection = Intersection(path.last(), pathSegments.last())
-            draw(lastIntersection.point, DrawData(Color.CYAN, 10.0))
+            canvas.setFill("#00FFFF")
+                .fillCircle(lastIntersection.point.x, lastIntersection.point.y, 1.0)
             driveTo(path.last())
+            drawRobot(canvas)
+            ftcDashboard.sendTelemetryPacket(packet)
             return true
         }
 
@@ -42,14 +55,35 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
         // closest by angle from current heading
         val closestIntersection = intersections.minByOrNull { abs(getAngleDiff(it.point)) }
         for (intersection in intersections) {
-            val color = if (intersection == closestIntersection) Color.GREEN else Color.RED
-            draw(intersection.point, DrawData(color, 10.0))
+            canvas.setFill(if (intersection == closestIntersection) "#00FF00" else "#FF0000")
+                .fillCircle(intersection.point.x, intersection.point.y, 1.0)
         }
         val targetIntersection = closestIntersection ?: lastIntersection
         lastSegment = pathSegments.indexOf(targetIntersection.line)
         lastIntersection = targetIntersection
         driveTo(targetIntersection.point)
+
+        drawRobot(canvas)
+
+        ftcDashboard.sendTelemetryPacket(packet)
         return true
+    }
+
+    private fun drawRobot(canvas: ICanvas) {
+        val lookaheadVector = Point(robot.lookahead, 0.0).rotate(robot.heading)
+        val lookaheadPoint = robot.position + lookaheadVector
+
+        canvas.setFill("#0000ff")
+            .fillCircle(robot.position.x, robot.position.y, 1.0)
+            .strokeCircle(robot.position.x, robot.position.y, robot.lookahead)
+            .strokeLine(robot.position.x, robot.position.y, lookaheadPoint.x, lookaheadPoint.y)
+
+        prevPosition.add(robot.position)
+        canvas.setFill("#ffa500")
+            .strokePolyline(
+                prevPosition.map { it.x }.toDoubleArray(),
+                prevPosition.map { it.y }.toDoubleArray()
+            )
     }
 
     private fun driveTo(point: Point) {
