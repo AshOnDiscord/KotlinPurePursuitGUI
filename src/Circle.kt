@@ -1,25 +1,14 @@
-import java.awt.Graphics2D
-
 class Circle(val center: Point, val radius: Double) {
-    fun draw(g: Graphics2D, ppi: Int) {
-        val x = (center.x - radius) * ppi
-        val y = (center.y - radius) * ppi
-        val diameter = (2 * radius) * ppi
-        g.drawOval(x.toInt(), y.toInt(), diameter.toInt(), diameter.toInt())
-        center.draw(g, ppi,2.0)
-    }
 
     fun contains(p: Point): Boolean {
         return center.distanceTo(p) <= radius
     }
 
     fun boundingContains(p: Point): Boolean {
-        val xMin = center.x - radius
-        val xMax = center.x + radius
-        val yMin = center.y - radius
-        val yMax = center.y + radius
+        val min = center - Point(radius, radius)
+        val max = center - Point(radius, radius)
 
-        return p.x in xMin..xMax && p.y in yMin..yMax
+        return p.x in min.x..max.x && p.y in min.y..max.y
     }
 
     override fun equals(other: Any?): Boolean {

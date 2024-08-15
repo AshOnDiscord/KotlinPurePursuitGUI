@@ -1,15 +1,7 @@
-import java.awt.Graphics2D
-
 class LineSegment(val p1: Point, val p2: Point) : Line(p1, p2) {
     override fun intersections(circle: Circle): List<Intersection> {
         val intersections = super.intersections(circle)
         return intersections.filter { boundingContains(it.point) }
-    }
-
-    fun draw(g: Graphics2D, ppi: Int) {
-        val ppiP1 = p1.scale(ppi.toDouble())
-        val ppiP2 = p2.scale(ppi.toDouble())
-        g.drawLine(ppiP1.x.toInt(), ppiP1.y.toInt(), ppiP2.x.toInt(), ppiP2.y.toInt())
     }
 
     fun length(): Double {
@@ -17,7 +9,7 @@ class LineSegment(val p1: Point, val p2: Point) : Line(p1, p2) {
     }
 
     override fun translate(p: Point): LineSegment {
-        return LineSegment(p1.add(p), p2.add(p))
+        return LineSegment(p1 + p, p2 + p)
     }
 
     fun contains(p: Point): Boolean {

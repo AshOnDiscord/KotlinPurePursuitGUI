@@ -1,33 +1,31 @@
-import java.awt.Graphics2D
 import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Point(val x: Double, val y: Double) {
-    fun draw(g: Graphics2D, ppi: Int, size: Double) {
-        val ppiPoint = scale(ppi.toDouble())
-        val x = ppiPoint.x
-        val y = ppiPoint.y
-        g.fillOval((x - size / 2).toInt(), (y - size / 2).toInt(), size.toInt(), size.toInt())
+    operator fun plus(point: Point): Point {
+        return Point(x + point.x, y + point.y)
     }
 
-    fun add(other: Point): Point {
-        return Point(x + other.x, y + other.y)
+    operator fun minus(point: Point): Point {
+        return Point(x - point.x, y - point.y)
     }
 
-    fun subtract(other: Point): Point {
-        return Point(x - other.x, y - other.y)
-    }
-
-    fun multiply(other: Point): Point {
-        return Point(x * other.x, y * other.y)
-    }
-
-    fun divide(other: Point): Point {
-        return Point(x / other.x, y / other.y)
-    }
-
-    fun scale(factor: Double): Point {
+    operator fun times(factor: Double): Point {
         return Point(x * factor, y * factor)
+    }
+
+    operator fun times(point: Point): Double {
+        return x * point.x + y * point.y
+    }
+
+    operator fun div(factor: Double): Point {
+        return Point(x / factor, y / factor)
+    }
+
+    operator fun div(point: Point): Point {
+        return Point(x / point.x, y / point.y)
     }
 
     fun distanceTo(other: Point): Double {
@@ -53,5 +51,12 @@ class Point(val x: Double, val y: Double) {
         var result = x.hashCode()
         result = 31 * result + y.hashCode()
         return result
+    }
+
+    fun rotate(heading: Double): Point {
+        // Rotate the point around the origin
+        val x = this.x * cos(heading) - this.y * sin(heading)
+        val y = this.x * sin(heading) + this.y * cos(heading)
+        return Point(x, y)
     }
 }
