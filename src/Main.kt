@@ -27,6 +27,7 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
     val pathSegments: List<LineSegment> = path.zipWithNext().map { LineSegment(it.first, it.second) }
 
     var lastIntersection: Intersection = Intersection(path[0], pathSegments[0]) // start of the path
+    var lastSegment: Int = 0 // prevent backtracking
 
     override fun init() {
         println("Initializing Pure Pursuit")
@@ -52,7 +53,8 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
             return true;
         }
 
-        val intersections = pathSegments.flatMap { it.intersections(robot.lookaheadCircle) }
+        val remainingSegments = pathSegments.subList(lastSegment, pathSegments.size)
+        val intersections = remainingSegments.flatMap { it.intersections(robot.lookaheadCircle) }
         // closest by angle from current heading
         val closestIntersection = intersections.minByOrNull { abs(getAngleDiff(it.point)) }
         for (intersection in intersections) {
@@ -60,6 +62,7 @@ class PurePursuit(ppi: Double, updateHertz: Double = -1.0) : OpMode(ppi, updateH
             draw(intersection.point, DrawData(color, 10.0))
         }
         val targetIntersection = closestIntersection ?: lastIntersection
+        lastSegment = pathSegments.indexOf(targetIntersection.line)
         lastIntersection = targetIntersection
         driveTo(targetIntersection.point)
         return true
