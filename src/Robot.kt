@@ -20,7 +20,7 @@ class Robot(size: Point, val lookahead: Double = 14.0) {
 
         val scaled = Point(x, y) / denominator * speed
         val scaledRX = rx / denominator * turnRate
-        
+
         power = scaled
         anglePower = scaledRX
     }

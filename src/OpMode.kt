@@ -67,7 +67,7 @@ abstract class OpMode(ppi: Double, private val updateHertz: Double) : IOpMode {
 
             val now = System.nanoTime()
             val dt = now - lastFrame
-            deltaTime = dt / 1e9;
+            deltaTime = dt / 1e9
             val fps = 1e9 / dt
             lastFrame = now
 
